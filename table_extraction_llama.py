@@ -12,18 +12,43 @@ from collections import OrderedDict
 import pandas as pd
 import os
 import argparse
+import re
 
 def run_ocr(image: Image.Image):
     data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    tokens = []
+    raw_tokens = []
     for i in range(len(data['text'])):
-        if int(data['conf'][i]) > 60:
+        if int(data['conf'][i]) > 60 and data['text'][i].strip():
             x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
-            tokens.append({
-                'text': data['text'][i],
+            raw_tokens.append({
+                'text': data['text'][i].strip(),
                 'bbox': [x, y, x + w, y + h]
             })
-    return tokens
+    
+    # Post process to merge decimals
+    merged_tokens = []
+    i = 0
+    while i < len(raw_tokens):
+        t1 = raw_tokens[i]['text']
+        if((i + 2) < len(raw_tokens) and
+        raw_tokens[i + 1]['text'] == '.' and
+        re.fullmatch(r'\d+', t1) and
+        re.fullmatch(r'\d+', raw_tokens[i + 2]['text'])):
+            
+            # Merge decimals
+            merged_text = f"{t1}.{raw_tokens[i + 2]['text']}"
+            bboxes = [raw_tokens[i]['bbox'], raw_tokens[i + 1]['bbox'], raw_tokens[i + 2]['bbox']]
+            x1 = min(b[0] for b in bboxes)
+            x2 = min(b[1] for b in bboxes)
+            y1 = min(b[2] for b in bboxes)
+            y2 = min(b[3] for b in bboxes)
+
+            merged_tokens.append({'text': merged_text, 'bbox': [x1, y1, x2, y2]})
+            i += 3
+        else:
+            merged_tokens.append(raw_tokens[i])
+            i += 1
+    return merged_tokens
 
 def tokens_to_text_prompt(tokens):
     layout = ""
