@@ -44,4 +44,8 @@ def main():
     _log.info(f"Document converted and tables exported in {end_time:.2f} seconds.")
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main()
+=======
+    main()
+>>>>>>> refs/remotes/origin/main
