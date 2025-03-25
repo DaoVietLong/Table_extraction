@@ -9,8 +9,8 @@ _log = logging.getLogger(__name__)
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    input_doc_path = Path("/home/unknown/Documents/table_image/input/table1.png")
-    output_dir = Path("/home/unknown/Documents/table_image/input/output")
+    input_doc_path = Path("/home/unknown/Documents/table_image/input/table1.png") # Change with your image path
+    output_dir = Path("/home/unknown/Documents/table_image/input/output") # Change with your output path
 
     doc_converter = DocumentConverter()
 
@@ -44,8 +44,4 @@ def main():
     _log.info(f"Document converted and tables exported in {end_time:.2f} seconds.")
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     main()
-=======
-    main()
->>>>>>> refs/remotes/origin/main
