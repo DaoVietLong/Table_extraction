@@ -9,35 +9,46 @@ _log = logging.getLogger(__name__)
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    input_doc_path = Path("/home/unknown/Documents/table_image/input/table1.png") # Change with your image path
-    output_dir = Path("/home/unknown/Documents/table_image/input/output") # Change with your output path
+    input_dir = Path("/home/unknown/Documents/table_image/input") # Change with your image path
+    output_dir = Path("/home/unknown/Documents/table_image/output") # Change with your output path
 
     doc_converter = DocumentConverter()
 
-    start_time = time.time()
-
-    conv_res = doc_converter.convert(input_doc_path)
-
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    doc_filename = conv_res.input.file.stem
+    image_extensions = ('.png', '.jpg', '.jpeg', '.tif', '.tiff')
 
-    # Export tables
-    for table_ix, table in enumerate(conv_res.document.tables):
-        table_df: pd.DataFrame = table.export_to_dataframe()
-        print(f"## Table {table_ix}")
-        print(table_df.to_markdown())
+    for input_doc_path in sorted(input_dir.iterdir()):
+        if not input_doc_path.suffix.lower() in image_extensions:
+            continue  # Skip non-image files
 
-        # Save the table as csv
-        element_csv_filename = output_dir / f"{doc_filename}-table-{table_ix+1}.csv"
-        _log.info(f"Saving CSV table to {element_csv_filename}")
-        table_df.to_csv(element_csv_filename)
+        _log.info(f"Processing {input_doc_path.name}")
+        start_time = time.time()
 
-        # Save the table as html
-        element_html_filename = output_dir / f"{doc_filename}-table-{table_ix+1}.html"
-        _log.info(f"Saving HTML table to {element_html_filename}")
-        with element_html_filename.open("w") as fp:
-            fp.write(table.export_to_html())
+        try:
+            conv_res = doc_converter.convert(input_doc_path)
+        except Exception as e:
+            _log.error(f"Failed to convert {input_doc_path.name}: {e}")
+            continue
+
+        doc_filename = input_doc_path.stem
+        
+        # Export tables
+        for table_ix, table in enumerate(conv_res.document.tables):
+            table_df: pd.DataFrame = table.export_to_dataframe()
+            print(f"## Table {table_ix}")
+            print(table_df.to_markdown())
+
+            # Save the table as csv
+            element_csv_filename = output_dir / f"{doc_filename}-table-{table_ix+1}.csv"
+            _log.info(f"Saving CSV table to {element_csv_filename}")
+            table_df.to_csv(element_csv_filename)
+
+            # Save the table as html
+            element_html_filename = output_dir / f"{doc_filename}-table-{table_ix+1}.html"
+            _log.info(f"Saving HTML table to {element_html_filename}")
+            with element_html_filename.open("w") as fp:
+                fp.write(table.export_to_html())
 
     end_time = time.time() - start_time
 
