@@ -12,53 +12,18 @@ from collections import OrderedDict
 import pandas as pd
 import os
 import argparse
-import re
-
-def merge_decimal_tokens(line_tokens):
-    merged = []
-    i = 0
-    while i < len(line_tokens):
-        t1 = line_tokens[i]['text']
-        if (i + 2 < len(line_tokens) and
-            line_tokens[i + 1]['text'] == '.' and
-            re.fullmatch(r'\\d+', t1) and
-            re.fullmatch(r'\\d+', line_tokens[i + 2]['text'])):
-            # Merge decimal
-            merged_text = "{t1}.{line_tokens[i + 2]['text']}"
-            bboxes = [line_tokens[i]['bbox'], line_tokens[i + 1]['bbox'], line_tokens[i + 2]['bbox']]
-            x1 = min(b[0] for b in bboxes)
-            y1 = min(b[1] for b in bboxes)
-            x2 = max(b[2] for b in bboxes)
-            y2 = max(b[3] for b in bboxes)
-            merged.append({'text': merged_text, 'bbox': [x1, y1, x2, y2]})
-            i += 3
-        else:
-            merged.append(line_tokens[i])
-            i += 1
-    return merged
 
 def run_ocr(image: Image.Image):
     data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    lines = {}
+    tokens = []
     for i in range(len(data['text'])):
-        if int(data['conf'][i]) > 60 and data['text'][i].strip():
-            line_num = data['line_num'][i]
-            if line_num not in lines:
-                lines[line_num] = []
+        if int(data['conf'][i]) > 60:
             x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
-            lines[line_num].append({
-                'text': data['text'][i].strip(),
+            tokens.append({
+                'text': data['text'][i],
                 'bbox': [x, y, x + w, y + h]
             })
-
-    merged_tokens = []
-    for line in lines.values():
-        # Sort left to right
-        line = sorted(line, key=lambda t: t['bbox'][0])
-        merged_tokens.extend(merge_decimal_tokens(line))
-
-    return merged_tokens
-
+    return tokens
 
 def tokens_to_text_prompt(tokens):
     layout = ""
