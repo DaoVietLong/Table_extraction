@@ -1,3 +1,7 @@
+# Before running script:
+# Installing huggingface-cli: pip install huggingface_hub
+# Logging in huggingface-cli: huggingface-cli login
+
 import logging
 import time
 from pathlib import Path
@@ -32,7 +36,7 @@ def main():
             continue
 
         doc_filename = input_doc_path.stem
-        
+
         # Export tables
         for table_ix, table in enumerate(conv_res.document.tables):
             table_df: pd.DataFrame = table.export_to_dataframe()
