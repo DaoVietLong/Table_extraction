@@ -7,14 +7,20 @@ import time
 from pathlib import Path
 import pandas as pd
 from docling.document_converter import DocumentConverter
+import argparse
 
 _log = logging.getLogger(__name__)
 
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    input_dir = Path("/home/unknown/Documents/table_image/input") # Change with your image path
-    output_dir = Path("/home/unknown/Documents/table_image/output") # Change with your output path
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_dir", required=True, help="Path to directory containing images")
+    parser.add_argument("--output_dir", required=True, help="Path to directory to store results")
+    args = parser.parse_args()
+
+    input_dir = Path(args.input_dir) # Change with your image directory path
+    output_dir = Path(args.output_dir) # Change with your output path
 
     doc_converter = DocumentConverter()
 
