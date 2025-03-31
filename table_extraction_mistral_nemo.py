@@ -45,7 +45,7 @@ def save_json(data, filename="output.json"):
         json.dump(data, f, indent=4)
 
 # Provide the image path
-image_path = "/home/unknown/Documents/table_image/input/f8GOA.jpg"  # Change this to the path of your image
+image_path = "/home/unknown/Documents/table_image/input/cropped/table1.png"  # Change this to the path of your image
 
 # Step 1: Extract text from image
 extracted_text = extract_text_from_image(image_path)
