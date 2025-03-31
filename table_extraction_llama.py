@@ -110,7 +110,9 @@ def main():
         image = Image.open(input_path).convert("RGB")
         tokens = run_ocr(image)
         markdown = recognize_table_with_llama(image, tokens)
+
         print(f"\n[✓] Processed: {image_file}\n")
+        print(markdown)  # <-- Add this line to print the Markdown table
 
         csv = markdown_to_csv(markdown)
         html = markdown_to_html(markdown)
